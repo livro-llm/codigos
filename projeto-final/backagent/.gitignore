@@ -1,0 +1,100 @@
+# ▶️ Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ▶️ Ambientes virtuais
+venv/
+env/
+.venv/
+.env/
+.python-version
+
+# ▶️ Arquivos temporários
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.bak
+*.swp
+*.tmp
+
+# ▶️ Configurações de IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# ▶️ Sistema operacional
+.DS_Store
+Thumbs.db
+
+# ▶️ Arquivos de testes ou cache
+.cache/
+.pytest_cache/
+coverage/
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.testmondata
+
+# ▶️ Arquivos de Flask
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# ▶️ Variáveis de ambiente sensíveis
+.env
+.env.* 
+.secret
+
+# ▶️ Docker (se você usar)
+docker-compose.override.yml
+*.pid
+
+# ▶️ Logs
+*.log
+
+# ▶️ VSCode debug
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# ▶️ Arquivos de wheel
+*.whl
+
+# ▶️ Pipenv ou Poetry (se usar)
+pip-log.txt
+pip-delete-this-directory.txt
+Pipfile.lock
+poetry.lock
+
+# ▶️ Jupyter notebooks (opcional)
+.ipynb_checkpoints/
+
+# ▶️ Arquivos do mypy
+.mypy_cache/
+
+# ▶️ Arquivos do PyCharm
+*.iml
+.idea/
+
+# ▶️ Arquivos de database locais
+*.db
+*.sqlite3
+
+# ▶️ Arquivos de socketio (se gerar)
+*.sock
