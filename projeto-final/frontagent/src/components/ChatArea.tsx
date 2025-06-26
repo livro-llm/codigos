@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useChatStore } from "@/stores/useChatStore";
 import { ArrowUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ModeToggle } from "./ThemeToggle";
 
 export default function ChatArea() {
   const messages = useChatStore((state) => state.messages);
@@ -43,9 +44,8 @@ export default function ChatArea() {
   return (
     <div className="flex flex-col flex-grow h-full p-6 bg-white dark:bg-black text-black dark:text-white">
       {/* Header */}
-      <header className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Just Chat</h1>
-        <span className="text-sm opacity-60">WebSocket • Flask</span>
+      <header className="hidden md:flex mb-4 items-center justify-end">
+        <ModeToggle />
       </header>
 
       {/* Tela de boas-vindas animada */}

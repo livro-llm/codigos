@@ -1,8 +1,12 @@
 import React, { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
-//import TopicPanel from "@/components/TopicPanel";
+import Login from "@/components/Login";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Menu } from "lucide-react";
 import { useSidebarStore } from "@/stores/useSidebarStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { ModeToggle } from "@/components/ThemeToggle";
+import { Link } from "react-router-dom";
 
 export default function MainLayout({
   children,
@@ -10,13 +14,13 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const { isOpen, setOpen } = useSidebarStore();
+  const { user } = useAuthStore();
 
-  // Corrigir problema de mobile ↔ desktop
   useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth < 768;
       if (!isMobile) {
-        setOpen(false); // Fecha drawer no desktop
+        setOpen(false);
       }
     };
     window.addEventListener("resize", handleResize);
@@ -24,39 +28,51 @@ export default function MainLayout({
   }, [setOpen]);
 
   return (
-    <div className="flex h-screen bg-white dark:bg-black text-black dark:text-white">
-      {/* Sidebar */}
-      <Sidebar />
+    <GoogleOAuthProvider clientId="258488583868-8i4ukkesbakfj15a3vqsm8t61gohk51k.apps.googleusercontent.com">
+      <div className="flex h-screen bg-white dark:bg-black text-black dark:text-white">
+        {!user ? (
+          // ... sua tela de login
+          <div className="m-auto text-center">
+            <h2 className="text-2xl font-semibold mb-4">
+              Bem-vindo ao Just Chat
+            </h2>
+            <Login />
+          </div>
+        ) : (
+          <>
+            <Sidebar />
+            {isOpen && (
+              <div
+                className="fixed  inset-0 bg-black/30 z-30 md:hidden"
+                onClick={() => setOpen(false)}
+              />
+            )}
+            <div className="flex flex-col flex-grow transition-all duration-300 ease-in-out md:ml-0">
+              <header className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <button
+                  aria-label="Open sidebar"
+                  onClick={() => setOpen(true)}
+                  className="p-2 cursor-pointer rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  <Menu className="w-6 h-6" />
+                </button>
 
-      {/* Overlay mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-30 md:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
+                <Link
+                  to="/"
+                  className="text-xl font-bold cursor-pointer select-none"
+                  aria-label="Home"
+                >
+                  Just Chat
+                </Link>
 
-      {/* Conteúdo principal */}
-      <div
-        className={`flex flex-col flex-grow transition-all duration-300 ease-in-out md:ml-0`}
-      >
-        {/* Header mobile */}
-        <header className="md:hidden flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          <button
-            aria-label="Open sidebar"
-            onClick={() => setOpen(true)}
-            className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <h1 className="ml-4 text-xl font-bold">Just Chat</h1>
-        </header>
+                <ModeToggle />
+              </header>
 
-        {children}
+              {children}
+            </div>
+          </>
+        )}
       </div>
-
-      {/* Painel lateral (desktop grande) */}
-      {/* <TopicPanel className="hidden lg:flex" /> */}
-    </div>
+    </GoogleOAuthProvider>
   );
 }

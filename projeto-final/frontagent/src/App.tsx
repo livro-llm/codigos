@@ -1,11 +1,12 @@
 import { ThemeProvider } from "./contexts/ThemeProvider";
-import Home from "./pages/Home";
+import { RouterProvider } from "react-router-dom";
+import Routes from "@/Routes";
 import "./assets/styles/globals.css";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="ui-theme">
-      <Home />
+      <RouterProvider router={Routes} />
     </ThemeProvider>
   );
 }

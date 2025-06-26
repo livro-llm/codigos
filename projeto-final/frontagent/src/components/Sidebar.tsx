@@ -1,8 +1,9 @@
-import { Menu, Search, Plus, User, X } from "lucide-react";
+import { Menu, Search, Plus, X, Bot } from "lucide-react";
 import { useAssistantsStore } from "@/stores/useAssistantsStore";
 import { useSidebarStore } from "@/stores/useSidebarStore";
-import { ModeToggle } from "./ThemeToggle";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Login from "./Login";
 
 export default function Sidebar() {
   const assistants = useAssistantsStore((state) => state.assistants);
@@ -45,7 +46,17 @@ export default function Sidebar() {
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-        {!isCollapsed && <span className="text-xl font-bold">Just Chat</span>}
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 cursor-pointer"
+              aria-label="Home"
+            >
+              <Bot className="w-7 h-7 text-primary" />
+            </Link>
+          </div>
+        )}
         {isMobile ? (
           <button
             onClick={() => setOpen(false)}
@@ -56,7 +67,7 @@ export default function Sidebar() {
         ) : (
           <button
             onClick={toggleCollapsed}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800"
+            className="p-2 cursor-pointer rounded hover:bg-gray-200 dark:hover:bg-gray-800"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -99,18 +110,7 @@ export default function Sidebar() {
       )}
 
       {/* Footer */}
-      {!isCollapsed && !isMobile && (
-        <div className="border-t dark:border-gray-700 p-4 flex flex-col gap-2">
-          <ModeToggle collapsed={isCollapsed} />
-          <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 p-2 rounded">
-            <User className="w-5 h-5" />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">Michael Araujo</span>
-              <span className="text-xs text-gray-500">Free</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {!isCollapsed && <Login />}
     </aside>
   );
 }
