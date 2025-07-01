@@ -1,5 +1,5 @@
 import MainLayout from "@/layouts/MainLayout";
-import ChatArea from "@/components/ChatArea";
+import ChatArea from "@/components/Chat/ChatArea";
 
 const Home: React.FC = () => (
   <MainLayout>

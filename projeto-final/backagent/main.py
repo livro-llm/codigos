@@ -1,49 +1,36 @@
-from flask import Flask, jsonify
-from flask_socketio import SocketIO, emit
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
-
-messages = []
-
-
-@app.route('/')
-def home():
-    return jsonify({"message": "API Flask WebSocket rodando 🔥"})
+from flask import Flask
+from app.config import Config
+from app.extensions import db, socketio, cors, jwt
+from app.routes.websocket import *
+from app.routes.api import api_bp
+from app.routes.auth import auth_bp
+from app.routes.payments import payments_bp
+from app.library.logger import logger
 
 
-@app.route('/messages', methods=['GET'])
-def get_messages():
-    return jsonify(messages)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    db.init_app(app)
+    cors.init_app(app)
+    # Inicializar socketio com eventlet
+    socketio.init_app(app, async_mode="eventlet")
+    jwt.init_app(app)
+
+    app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(payments_bp, url_prefix="/payments")
+
+    @app.route("/")
+    def home():
+        return {"message": "Servidor rodando 🔥"}
+
+    return app
 
 
-@socketio.on('connect')
-def handle_connect():
-    print('🟢 Cliente conectado')
+app = create_app()
+logger.info("🟢 Aplicação iniciada com sucesso")
 
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print('🔴 Cliente desconectado')
-
-
-@socketio.on('chat_message')
-def handle_chat_message(data):
-    print('💬 Mensagem recebida:', data)
-    user_message = data.get('message')
-
-    messages.append({'from': 'user', 'text': user_message})
-
-    emit('user_message', {'message': user_message}, broadcast=True)
-
-    response = f"Resposta do servidor para: {user_message}"
-
-    messages.append({'from': 'server', 'text': response})
-
-    emit('server_message', {'message': response}, broadcast=True)
-
-
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    socketio.run(app, host="0.0.0.0", port=5000)

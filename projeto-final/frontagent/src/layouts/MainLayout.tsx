@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import Sidebar from "@/components/Sidebar";
-import Login from "@/components/Login";
+import Sidebar from "@/components/Sidebar/Sidebar";
+import Login from "@/components/Login/Login";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Menu } from "lucide-react";
-import { useSidebarStore } from "@/stores/useSidebarStore";
-import { useAuthStore } from "@/stores/useAuthStore";
-import { ModeToggle } from "@/components/ThemeToggle";
+import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
+import { useAuthStore } from "@/stores/Auth/useAuthStore";
+import { ModeToggle } from "@/components/Reusable/ThemeToggle";
 import { Link } from "react-router-dom";
 
 export default function MainLayout({

@@ -1,25 +1,50 @@
-name: postgres-ai
+name: pgai
 services:
-  postgres:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: postgres-ai:v1
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-      - ./activate-extension.sql:/docker-entrypoint-initdb.d/0-activate_extension.sql
-
+  db:
+    image: timescale/timescaledb-ha:pg17
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=vectordb
-      - OPENAI_API_KEY=sk-asdasd
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/home/postgres/pgdata/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    depends_on:
+      - ollama
 
   vectorizer-worker:
     image: timescale/pgai-vectorizer-worker:latest
     environment:
-      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@postgres:5432/vectordb
-      OPENAI_API_KEY: sk-asdasd
-    command: [ "--poll-interval", "60s" ]
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@db:5432/postgres
+      OLLAMA_HOST: http://ollama:11435
+    command: ["--poll-interval", "5s"]
+    depends_on:
+      - db
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11435
+    ports:
+      - "11435:11435" # Porta externa:interna
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_API_BASE_URL=http://ollama:11435
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  data:
+  ollama:
+  open-webui:

@@ -1,9 +1,9 @@
 import { Menu, Search, Plus, X, Bot } from "lucide-react";
-import { useAssistantsStore } from "@/stores/useAssistantsStore";
-import { useSidebarStore } from "@/stores/useSidebarStore";
+import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
+import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Login from "./Login";
+import Login from "../Login/Login";
 
 export default function Sidebar() {
   const assistants = useAssistantsStore((state) => state.assistants);

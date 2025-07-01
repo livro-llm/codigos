@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { Suspense } from "react";
 import { lazy } from "react";
 
-import Loading from "@/components/Loading";
+import Loading from "@/components/Reusable/Loading";
 const Home = lazy(() => import("@/pages/Home"));
 const Profile = lazy(() => import("@/pages/Profile"));
 
@@ -20,6 +20,14 @@ const router = createBrowserRouter([
     element: (
       <Suspense fallback={<Loading />}>
         <Profile />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/:id",
+    element: (
+      <Suspense fallback={<Loading />}>
+        <Home />
       </Suspense>
     ),
   },

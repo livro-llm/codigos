@@ -1,8 +1,8 @@
 import MainLayout from "@/layouts/MainLayout";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { useAuthStore } from "@/stores/Auth/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import { ModeToggle } from "@/components/ThemeToggle";
+import { ModeToggle } from "@/components/Reusable/ThemeToggle";
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuthStore();
