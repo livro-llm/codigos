@@ -2,13 +2,14 @@ import { Menu, Search, Plus, X, Bot } from "lucide-react";
 import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
 import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Login from "../Login/Login";
 
 export default function Sidebar() {
   const assistants = useAssistantsStore((state) => state.assistants);
-  const selected = useAssistantsStore((state) => state.selectedAssistant);
   const selectAssistant = useAssistantsStore((state) => state.selectAssistant);
+  const fetchAssistants = useAssistantsStore((state) => state.fetchAssistants);
+  const selected = useAssistantsStore((state) => state.selectedAssistant);
 
   const { isCollapsed, toggleCollapsed, isOpen, setOpen } = useSidebarStore();
 
@@ -16,16 +17,31 @@ export default function Sidebar() {
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
 
+  const location = useLocation();
+
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
+      setIsMobile(window.innerWidth < 768);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleSelect = (id: string) => {
+  // Busca assistentes ao montar
+  useEffect(() => {
+    fetchAssistants();
+  }, [fetchAssistants]);
+
+  // Atualiza assistente selecionado baseado no caminho da URL
+  useEffect(() => {
+    // Exemplo: caminho "/23" -> pega "23"
+    const pathId = location.pathname.slice(1);
+    if (pathId && pathId !== String(selected)) {
+      selectAssistant(pathId);
+    }
+  }, [location.pathname, selected, selectAssistant]);
+
+  const handleSelect = (id: string | number) => {
     selectAssistant(id);
     if (isMobile) setOpen(false);
   };
@@ -80,6 +96,8 @@ export default function Sidebar() {
           isMobile={isMobile}
           icon={<Plus className="w-5 h-5" />}
           label="Nova conversa"
+          to="/"
+          onClick={() => setOpen(false)}
         />
         <SidebarItem
           isMobile={isMobile}
@@ -94,17 +112,18 @@ export default function Sidebar() {
       {!isCollapsed && (
         <div className="flex-1 overflow-y-auto px-2 space-y-1 mt-2">
           {assistants.map((assistant) => (
-            <div
+            <Link
               key={assistant.id}
+              to={`/${assistant.id}`}
               onClick={() => handleSelect(assistant.id)}
-              className={`cursor-pointer rounded px-2 py-2 ${
-                selected === assistant.id
+              className={`block cursor-pointer rounded px-2 py-2 ${
+                selected === String(assistant.id)
                   ? "bg-blue-600 text-white"
                   : "hover:bg-gray-200 dark:hover:bg-gray-800"
               }`}
             >
               {assistant.name}
-            </div>
+            </Link>
           ))}
         </div>
       )}
@@ -119,14 +138,18 @@ function SidebarItem({
   icon,
   label,
   isMobile,
+  to,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   isMobile: boolean;
+  to?: string;
+  onClick?: () => void;
 }) {
   const { isCollapsed } = useSidebarStore();
 
-  return (
+  const content = (
     <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 p-2 rounded justify-start md:justify-start">
       {icon} {isMobile && label}
       {!isCollapsed && (
@@ -134,4 +157,14 @@ function SidebarItem({
       )}
     </div>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className="block" onClick={onClick}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div onClick={onClick}>{content}</div>;
 }

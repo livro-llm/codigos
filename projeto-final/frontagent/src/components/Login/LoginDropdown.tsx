@@ -6,6 +6,8 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/Auth/useAuthStore";
+import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
+import { useChatStore } from "@/stores/Chat/useChatStore";
 import { useNavigate } from "react-router-dom";
 import { User, LogOut } from "lucide-react";
 
@@ -13,7 +15,19 @@ export function LoginDropdown() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
+  const resetAssistants = useAssistantsStore((state) => state.resetAssistants);
+  const resetChat = useChatStore((state) => state.resetChat);
+
   if (!user) return null;
+
+  const handleLogout = () => {
+    if (window.confirm("Deseja realmente sair?")) {
+      logout();
+      resetAssistants();
+      resetChat();
+      navigate("/", { replace: true });
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -55,14 +69,7 @@ export function LoginDropdown() {
           </div>
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onSelect={() => {
-            if (window.confirm("Deseja realmente sair?")) {
-              logout();
-            }
-          }}
-        >
+        <DropdownMenuItem className="cursor-pointer" onSelect={handleLogout}>
           <div className="flex items-center gap-2">
             <LogOut className="w-4 h-4" />
             <span>Sair</span>

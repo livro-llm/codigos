@@ -13,8 +13,10 @@ type ChatStore = {
   connect: () => void;
   disconnect: () => void;
   sendMessage: (message: string, chatId: number) => void;
+  sendMessageWithCreateChat: (message: string) => Promise<number>;
   loadHistory: (chatId: number) => Promise<void>;
   setLoadingResponse: (loading: boolean) => void;
+  resetChat: () => void;
 };
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -23,6 +25,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isLoadingResponse: false,
 
   setLoadingResponse: (loading: boolean) => set({ isLoadingResponse: loading }),
+
+  resetChat: () => set({ messages: [], isLoadingResponse: false }),
 
   connect: () => {
     const existingSocket = get().socket;
@@ -34,9 +38,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const token = localStorage.getItem("access_token");
     const socket = io("http://localhost:5000", {
       transports: ["websocket"],
-      query: {
-        access_token: token || "",
-      },
+      query: { access_token: token || "" },
     });
 
     console.log("🟢 Conectando ao servidor...");
@@ -49,13 +51,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.log("🔴 Desconectado do servidor");
     });
 
-    // Mensagem final do bot (texto completo)
     socket.off("server_message");
     socket.on("server_message", (data) => {
       set((state) => {
         const lastMsg = state.messages[state.messages.length - 1];
         if (lastMsg?.from === "server") {
-          // Evita atualizar estado se texto não mudou
           if (lastMsg.text === data.message) {
             return {};
           }
@@ -76,7 +76,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
     });
 
-    // Mensagem do usuário
     socket.off("user_message");
     socket.on("user_message", (data) => {
       set((state) => ({
@@ -84,21 +83,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }));
     });
 
-    // Token parcial da IA (streaming)
     socket.off("server_stream");
     socket.on("server_stream", (data) => {
       set((state) => {
         const lastMsg = state.messages[state.messages.length - 1];
-
         if (lastMsg?.from === "server") {
           const newText = lastMsg.text + data.token;
-
           if (newText === lastMsg.text) {
-            return state; // sem mudanças
+            return state;
           }
-
           const updated = { ...lastMsg, text: newText };
-
           return {
             ...state,
             messages: [...state.messages.slice(0, -1), updated],
@@ -106,7 +100,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           };
         } else {
           if (!data.token) return state;
-
           return {
             ...state,
             messages: [...state.messages, { from: "server", text: data.token }],
@@ -137,7 +130,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    get().setLoadingResponse(true); // liga loading ao enviar mensagem
+    get().setLoadingResponse(true);
 
     socket.emit("chat_message", {
       message,
@@ -146,10 +139,44 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
+  sendMessageWithCreateChat: async (message: string) => {
+    const socket = get().socket;
+    const token = localStorage.getItem("access_token");
+
+    if (!socket || !token) {
+      console.warn("⚠️ Socket não conectado ou token ausente");
+      throw new Error("Socket não conectado ou token ausente");
+    }
+
+    get().setLoadingResponse(true);
+
+    return new Promise<number>((resolve, reject) => {
+      // Limpa listener anterior só para evitar duplicidade
+      socket.off("chat_created");
+      // Ouve o evento chat_created que vem do backend com chat_id novo
+      socket.once("chat_created", (data: { chat_id: number }) => {
+        get().setLoadingResponse(false);
+        resolve(data.chat_id);
+      });
+
+      // Envia mensagem sem chat_id (novo chat)
+      socket.emit("chat_message", {
+        message,
+        chat_id: null,
+        access_token: token,
+      });
+
+      // Timeout de segurança pra rejeitar caso não tenha resposta (exemplo: 10s)
+      setTimeout(() => {
+        get().setLoadingResponse(false);
+        reject(new Error("Tempo esgotado ao criar chat"));
+      }, 10000);
+    });
+  },
+
   loadHistory: async (chatId: number) => {
     try {
       const token = localStorage.getItem("access_token");
-
       const res = await fetch(
         `http://localhost:5000/api/messages?chat_id=${chatId}`,
         {
@@ -158,16 +185,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           },
         }
       );
-
-      if (!res.ok) throw new Error("Falha ao carregar mensagens");
-
+      if (!res.ok) {
+        const text = await res.text();
+        const error = new Error(
+          `Falha ao carregar mensagens: ${res.status} ${text}`
+        );
+        (error as any).status = res.status;
+        throw error;
+      }
       const data = await res.json();
-
       if (Array.isArray(data)) {
         set({ messages: data });
       }
     } catch (error) {
-      console.error("Erro ao carregar histórico", error);
+      throw error;
     }
   },
 }));
