@@ -27,7 +27,7 @@ prompt = ChatPromptTemplate.from_template(template)
 
 def get_chain():
     if USE_OLLAMA:
-        model = OllamaLLM(model="llama3")
+        model = OllamaLLM(model="phi3:mini")
     else:
         openai_key = os.getenv("OPEN_API_KEY")
         if not openai_key:

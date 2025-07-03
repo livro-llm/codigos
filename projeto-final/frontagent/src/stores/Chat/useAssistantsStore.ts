@@ -9,10 +9,11 @@ interface Assistant {
 interface AssistantsState {
   assistants: Assistant[];
   selectedAssistant: string | number | null;
-  selectAssistant: (id: string | number) => void;
+  selectAssistant: (id: string | number | null) => void;
   fetchAssistants: () => Promise<void>;
   addAssistant: (assistant: Assistant) => void;
   resetAssistants: () => void;
+  updateAssistantName: (id: string | number, newName: string) => void;
 }
 
 export const useAssistantsStore = create<AssistantsState>((set) => ({
@@ -45,5 +46,12 @@ export const useAssistantsStore = create<AssistantsState>((set) => ({
   addAssistant: (assistant) =>
     set((state) => ({
       assistants: [...state.assistants, assistant],
+    })),
+
+  updateAssistantName: (id, newName) =>
+    set((state) => ({
+      assistants: state.assistants.map((a) =>
+        a.id === id ? { ...a, name: newName } : a
+      ),
     })),
 }));

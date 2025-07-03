@@ -19,14 +19,12 @@ export default function ChatArea() {
   const loadHistory = useChatStore((state) => state.loadHistory);
   const loadingResponse = useChatStore((state) => state.isLoadingResponse);
   const resetChat = useChatStore((state) => state.resetChat);
-  const assistants = useAssistantsStore((state) => state.assistants);
-  const addAssistant = useAssistantsStore((state) => state.addAssistant);
+  const fetchAssistants = useAssistantsStore((state) => state.fetchAssistants);
 
   const { id: chatIdParam } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Estado local do chatId - começa como número vindo da rota, ou null
   const [chatId, setChatId] = useState<number | null>(
     chatIdParam ? Number(chatIdParam) : null
   );
@@ -36,19 +34,16 @@ export default function ChatArea() {
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // Conecta socket ao montar
   useEffect(() => {
     connect();
     return () => disconnect();
   }, [connect, disconnect]);
 
-  // Rola para o fim das mensagens
   useEffect(() => {
     if (bottomRef.current)
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Quando a rota muda, atualiza chatId e limpa mensagens se for /
   useEffect(() => {
     const currentChatId =
       location.pathname === "/" ? null : Number(location.pathname.slice(1));
@@ -57,13 +52,12 @@ export default function ChatArea() {
       setChatId(currentChatId);
 
       if (currentChatId === null) {
-        resetChat(); // limpa mensagens e loading para mostrar Welcome
+        resetChat();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  // Carrega histórico quando chatId muda (e não é null)
   useEffect(() => {
     if (chatId === null) return;
 
@@ -77,32 +71,22 @@ export default function ChatArea() {
       .finally(() => setLoadingHistory(false));
   }, [chatId, loadHistory, navigate]);
 
-  // Função de enviar mensagem
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // Se não existe chatId (novo chat), cria chat e envia mensagem
     if (chatId === null) {
       try {
         const newChatId = await sendMessageWithCreateChat(input.trim());
-
-        const exists = assistants.some(
-          (a) => String(a.id) === String(newChatId)
-        );
-        if (!exists) {
-          addAssistant({ id: newChatId, name: input.trim() });
-        }
+        await fetchAssistants();
 
         setChatId(newChatId);
 
-        // Redireciona para a nova rota do chat só se criou o chat agora
         navigate(`/${newChatId}`, { replace: true });
       } catch (error) {
         console.error("Erro ao enviar e criar chat:", error);
         return;
       }
     } else {
-      // Chat já existe, só envia mensagem
       sendMessage(input.trim(), chatId);
     }
 
@@ -114,15 +98,12 @@ export default function ChatArea() {
       <ChatHeader />
 
       {chatId === null ? (
-        // Tela de boas vindas se não tem chatId ainda
         <Welcome input={input} setInput={setInput} handleSend={handleSend} />
       ) : loadingHistory ? (
-        // Loading ao carregar histórico
         <div className="flex justify-center my-4">
           <Loading />
         </div>
       ) : (
-        // Lista de mensagens + input
         <>
           <MessageList
             messages={messages}

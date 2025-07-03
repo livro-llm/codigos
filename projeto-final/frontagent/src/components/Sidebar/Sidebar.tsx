@@ -1,13 +1,13 @@
 import { Menu, Search, Plus, X, Bot } from "lucide-react";
 import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
 import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Login from "@/components/Login/Login";
 import SidebarItem from "@/components/Sidebar/SidebarItem";
+import ListChats from "@/components/Sidebar/ListChats";
 
 export default function Sidebar() {
-  const assistants = useAssistantsStore((state) => state.assistants);
   const selectAssistant = useAssistantsStore((state) => state.selectAssistant);
   const fetchAssistants = useAssistantsStore((state) => state.fetchAssistants);
   const selected = useAssistantsStore((state) => state.selectedAssistant);
@@ -32,7 +32,8 @@ export default function Sidebar() {
     fetchAssistants();
   }, [fetchAssistants]);
 
-  useEffect(() => {
+  // Usando useLayoutEffect para garantir sincronização rápida na montagem
+  useLayoutEffect(() => {
     const pathId = location.pathname.slice(1);
     if (pathId && pathId !== String(selected)) {
       selectAssistant(pathId);
@@ -74,7 +75,7 @@ export default function Sidebar() {
         {isMobile ? (
           <button
             onClick={() => setOpen(false)}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800"
+            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -107,24 +108,7 @@ export default function Sidebar() {
       <div className="border-t dark:border-gray-700" />
 
       {/* Lista de chats */}
-      {!isCollapsed && (
-        <div className="flex-1 overflow-y-auto px-2 space-y-1 mt-2">
-          {assistants.map((assistant) => (
-            <Link
-              key={assistant.id}
-              to={`/${assistant.id}`}
-              onClick={() => handleSelect(assistant.id)}
-              className={`block cursor-pointer rounded px-2 py-2 ${
-                selected === String(assistant.id)
-                  ? "bg-blue-600 text-white"
-                  : "hover:bg-gray-200 dark:hover:bg-gray-800"
-              }`}
-            >
-              {assistant.name}
-            </Link>
-          ))}
-        </div>
-      )}
+      <ListChats isCollapsed={isCollapsed} onSelect={handleSelect} />
 
       {/* Footer */}
       {!isCollapsed && <Login />}
