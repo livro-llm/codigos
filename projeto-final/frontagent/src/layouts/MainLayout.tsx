@@ -1,12 +1,13 @@
 import React, { useEffect } from "react";
-import Sidebar from "@/components/Sidebar/Sidebar";
-import Login from "@/components/Login/Login";
+import { Link } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Menu } from "lucide-react";
 import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
 import { useAuthStore } from "@/stores/Auth/useAuthStore";
+import Sidebar from "@/components/Sidebar/Sidebar";
+import Login from "@/components/Login/Login";
+import { SocketManager } from "@/components/Reusable/SocketManager";
 import { ModeToggle } from "@/components/Reusable/ThemeToggle";
-import { Link } from "react-router-dom";
 
 export default function MainLayout({
   children,
@@ -31,7 +32,6 @@ export default function MainLayout({
     <GoogleOAuthProvider clientId="258488583868-8i4ukkesbakfj15a3vqsm8t61gohk51k.apps.googleusercontent.com">
       <div className="flex h-screen bg-white dark:bg-black text-black dark:text-white">
         {!user ? (
-          // ... sua tela de login
           <div className="m-auto text-center">
             <h2 className="text-2xl font-semibold mb-4">
               Bem-vindo ao Just Chat
@@ -68,6 +68,7 @@ export default function MainLayout({
                 <ModeToggle />
               </header>
 
+              <SocketManager />
               {children}
             </div>
           </>

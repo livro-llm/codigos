@@ -4,47 +4,46 @@ type User = {
   name: string;
   email: string;
   picture: string;
-  loginAt?: string;
 };
 
 type AuthStore = {
   user: User | null;
   accessToken: string | null;
-  setUser: (user: User, accessToken: string) => void;
+  refreshToken: string | null;
+  setUser: (user: User, accessToken: string, refreshToken: string) => void;
+  updateAccessToken: (token: string) => void;
   logout: () => void;
 };
 
-const localStorageUserKey = "auth_user";
-const localStorageTokenKey = "access_token";
+const accessKey = "access_token";
+const refreshKey = "refresh_token";
+const userKey = "auth_user";
 
 export const useAuthStore = create<AuthStore>((set) => {
-  const storedUser = localStorage.getItem(localStorageUserKey);
-  const storedToken = localStorage.getItem(localStorageTokenKey);
-
-  const initialUser = storedUser ? JSON.parse(storedUser) : null;
-  const initialToken = storedToken ? storedToken : null;
+  const user = localStorage.getItem(userKey);
+  const accessToken = localStorage.getItem(accessKey);
+  const refreshToken = localStorage.getItem(refreshKey);
 
   return {
-    user: initialUser,
-    accessToken: initialToken,
+    user: user ? JSON.parse(user) : null,
+    accessToken,
+    refreshToken,
 
-    setUser: (user, accessToken) => {
-      const userWithTimestamp = {
-        ...user,
-        loginAt: new Date().toISOString(),
-      };
-      localStorage.setItem(
-        localStorageUserKey,
-        JSON.stringify(userWithTimestamp)
-      );
-      localStorage.setItem(localStorageTokenKey, accessToken);
-      set({ user: userWithTimestamp, accessToken });
+    setUser: (user, accessToken, refreshToken) => {
+      localStorage.setItem(userKey, JSON.stringify(user));
+      localStorage.setItem(accessKey, accessToken);
+      localStorage.setItem(refreshKey, refreshToken);
+      set({ user, accessToken, refreshToken });
+    },
+
+    updateAccessToken: (token) => {
+      localStorage.setItem(accessKey, token);
+      set({ accessToken: token });
     },
 
     logout: () => {
-      localStorage.removeItem(localStorageUserKey);
-      localStorage.removeItem(localStorageTokenKey);
-      set({ user: null, accessToken: null });
+      localStorage.clear();
+      set({ user: null, accessToken: null, refreshToken: null });
     },
   };
 });

@@ -3,7 +3,8 @@ import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
 import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Login from "../Login/Login";
+import Login from "@/components/Login/Login";
+import SidebarItem from "@/components/Sidebar/SidebarItem";
 
 export default function Sidebar() {
   const assistants = useAssistantsStore((state) => state.assistants);
@@ -27,14 +28,11 @@ export default function Sidebar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Busca assistentes ao montar
   useEffect(() => {
     fetchAssistants();
   }, [fetchAssistants]);
 
-  // Atualiza assistente selecionado baseado no caminho da URL
   useEffect(() => {
-    // Exemplo: caminho "/23" -> pega "23"
     const pathId = location.pathname.slice(1);
     if (pathId && pathId !== String(selected)) {
       selectAssistant(pathId);
@@ -132,39 +130,4 @@ export default function Sidebar() {
       {!isCollapsed && <Login />}
     </aside>
   );
-}
-
-function SidebarItem({
-  icon,
-  label,
-  isMobile,
-  to,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  isMobile: boolean;
-  to?: string;
-  onClick?: () => void;
-}) {
-  const { isCollapsed } = useSidebarStore();
-
-  const content = (
-    <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 p-2 rounded justify-start md:justify-start">
-      {icon} {isMobile && label}
-      {!isCollapsed && (
-        <span className="text-sm hidden md:inline">{label}</span>
-      )}
-    </div>
-  );
-
-  if (to) {
-    return (
-      <Link to={to} className="block" onClick={onClick}>
-        {content}
-      </Link>
-    );
-  }
-
-  return <div onClick={onClick}>{content}</div>;
 }

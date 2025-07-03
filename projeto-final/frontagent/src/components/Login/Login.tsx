@@ -1,8 +1,8 @@
-import { LoginDropdown } from "@/components/Login/LoginDropdown";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "@/stores/Auth/useAuthStore";
 import { googleLogin } from "@/api/auth";
+import { LoginDropdown } from "@/components/Login/LoginDropdown";
 
 function Login() {
   const { user, setUser } = useAuthStore();
@@ -12,7 +12,6 @@ function Login() {
 
     try {
       const decoded: any = jwtDecode(credential);
-
       const data = await googleLogin(credential);
 
       setUser(
@@ -21,10 +20,11 @@ function Login() {
           email: decoded.email,
           picture: decoded.picture,
         },
-        data.access_token
+        data.access_token,
+        data.refresh_token
       );
     } catch (err) {
-      console.error("❌ Falha ao autenticar com backend", err);
+      console.error("❌ Erro ao logar com Google:", err);
     }
   };
 

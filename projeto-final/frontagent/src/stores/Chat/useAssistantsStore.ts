@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "@/api/api";
 
 interface Assistant {
   id: string | number;
@@ -10,7 +11,7 @@ interface AssistantsState {
   selectedAssistant: string | number | null;
   selectAssistant: (id: string | number) => void;
   fetchAssistants: () => Promise<void>;
-  addAssistant: (assistant: Assistant) => void; // << novo
+  addAssistant: (assistant: Assistant) => void;
   resetAssistants: () => void;
 }
 
@@ -24,17 +25,8 @@ export const useAssistantsStore = create<AssistantsState>((set) => ({
 
   fetchAssistants: async () => {
     try {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch("http://localhost:5000/api/chats", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error("Erro ao buscar assistentes");
-
-      const data = await res.json();
+      const res = await api.get("/api/chats");
+      const data = res.data;
 
       const formatted = data.map((item: any) => ({
         id: item.id,
