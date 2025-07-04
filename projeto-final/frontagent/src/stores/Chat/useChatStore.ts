@@ -4,6 +4,8 @@ import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/Auth/useAuthStore";
 import api from "@/api/api";
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 type Message = {
   from: "user" | "server";
   text: string;
@@ -38,7 +40,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
 
     const token = useAuthStore.getState().accessToken;
-    const socket = io("http://localhost:5000", {
+    const socket = io(baseURL, {
       transports: ["websocket"],
       query: { access_token: token || "" },
     });

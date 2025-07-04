@@ -16,6 +16,7 @@ export default function MainLayout({
 }) {
   const { isOpen, setOpen } = useSidebarStore();
   const { user } = useAuthStore();
+  const baseURL = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     const handleResize = () => {
@@ -29,7 +30,7 @@ export default function MainLayout({
   }, [setOpen]);
 
   return (
-    <GoogleOAuthProvider clientId="258488583868-8i4ukkesbakfj15a3vqsm8t61gohk51k.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={baseURL}>
       <div className="flex h-screen bg-white dark:bg-black text-black dark:text-white">
         {!user ? (
           <div className="m-auto text-center">
