@@ -1,4 +1,3 @@
-// src/stores/Chat/useChatStore.ts
 import { create } from "zustand";
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/Auth/useAuthStore";
@@ -22,7 +21,7 @@ type ChatStore = {
   loadHistory: (chatId: number) => Promise<void>;
   setLoadingResponse: (loading: boolean) => void;
   resetChat: () => void;
-  setMessages: (messages: Message[]) => void; // ✅ novo método
+  setMessages: (messages: Message[]) => void;
 };
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -34,7 +33,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   resetChat: () => set({ messages: [], isLoadingResponse: false }),
 
-  setMessages: (messages: Message[]) => set({ messages }), // ✅ novo método
+  setMessages: (messages: Message[]) => set({ messages }),
 
   connect: () => {
     const existingSocket = get().socket;
