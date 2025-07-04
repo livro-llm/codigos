@@ -10,6 +10,7 @@ import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
 
 export default function ChatArea() {
   const messages = useChatStore((state) => state.messages);
+  const setMessages = useChatStore((state) => state.setMessages); // novo setter
   const sendMessage = useChatStore((state) => state.sendMessage);
   const sendMessageWithCreateChat = useChatStore(
     (state) => state.sendMessageWithCreateChat
@@ -28,7 +29,6 @@ export default function ChatArea() {
   const [chatId, setChatId] = useState<number | null>(
     chatIdParam ? Number(chatIdParam) : null
   );
-
   const [input, setInput] = useState("");
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -72,25 +72,26 @@ export default function ChatArea() {
   }, [chatId, loadHistory, navigate]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    setMessages([...messages, { text: trimmed, from: "user" }]);
+
+    setInput("");
 
     if (chatId === null) {
       try {
-        const newChatId = await sendMessageWithCreateChat(input.trim());
+        const newChatId = await sendMessageWithCreateChat(trimmed);
         await fetchAssistants();
-
         setChatId(newChatId);
-
         navigate(`/${newChatId}`, { replace: true });
       } catch (error) {
         console.error("Erro ao enviar e criar chat:", error);
         return;
       }
     } else {
-      sendMessage(input.trim(), chatId);
+      sendMessage(trimmed, chatId);
     }
-
-    setInput("");
   };
 
   return (

@@ -56,7 +56,7 @@ def get_messages():
     messages_serialized = [
         {
             "from": m.sender,
-            "text": m.content,
+            "text": m.content
         }
         for m in messages
     ]

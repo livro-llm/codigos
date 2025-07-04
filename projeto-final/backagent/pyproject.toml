@@ -15,6 +15,7 @@ dependencies = [
     "langchain>=0.3.26",
     "langchain-ollama>=0.3.3",
     "langchain-openai>=0.3.27",
+    "markdown>=3.8.2",
     "ollama>=0.5.1",
     "openai>=1.93.0",
     "psycopg2-binary>=2.9.10",

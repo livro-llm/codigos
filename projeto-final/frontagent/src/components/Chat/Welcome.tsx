@@ -14,9 +14,9 @@ export default function Welcome({ input, setInput, handleSend }: Props) {
   const handleLocalSend = () => {
     if (!input.trim()) return;
 
-    setShowTyping(true); // mostra typing e oculta conteúdo
+    setShowTyping(true);
 
-    handleSend(); // envia e redireciona assim que chegar
+    handleSend();
   };
 
   return (
@@ -28,7 +28,6 @@ export default function Welcome({ input, setInput, handleSend }: Props) {
             Comece sua conversa digitando abaixo.
           </p>
 
-          {/* Input e botão só aparecem se não estiver digitando */}
           <div className="w-full max-w-md relative">
             <input
               type="text"

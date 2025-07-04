@@ -22,6 +22,7 @@ type ChatStore = {
   loadHistory: (chatId: number) => Promise<void>;
   setLoadingResponse: (loading: boolean) => void;
   resetChat: () => void;
+  setMessages: (messages: Message[]) => void; // ✅ novo método
 };
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -33,10 +34,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   resetChat: () => set({ messages: [], isLoadingResponse: false }),
 
+  setMessages: (messages: Message[]) => set({ messages }), // ✅ novo método
+
   connect: () => {
     const existingSocket = get().socket;
     if (existingSocket?.connected) {
-      existingSocket.disconnect(); // desconecta antes de reconectar
+      existingSocket.disconnect();
     }
 
     const token = useAuthStore.getState().accessToken;
@@ -53,7 +56,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.log("🔴 Desconectado do servidor");
     });
 
-    // Remover listeners antigos e adicionar novos (exemplo simplificado)
     socket.off("server_message");
     socket.on("server_message", (data) => {
       set((state) => {
@@ -78,8 +80,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       });
     });
-
-    // Outros eventos seguem a mesma lógica...
 
     set({ socket });
   },
