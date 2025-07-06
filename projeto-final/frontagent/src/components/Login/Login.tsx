@@ -29,7 +29,7 @@ function Login() {
   };
 
   return (
-    <div className="border-t dark:border-gray-700 p-4">
+    <div className="border-t dark:border-gray-700 p-4 text-center">
       {user ? (
         <LoginDropdown />
       ) : (

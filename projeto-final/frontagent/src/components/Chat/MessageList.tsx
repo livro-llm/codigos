@@ -1,6 +1,7 @@
+import UserMessageBubble from "@/components/Chat/UserMessageBubble";
+import BotMessageBubble from "@/components/Chat/BotMessageBubble";
 import { motion } from "framer-motion";
 import TypingIndicator from "@/components/Reusable/TypingIndicator";
-import MessageBubble from "@/components/Chat/MessageBubble";
 
 type Props = {
   messages: { text: string; from: string }[];
@@ -14,11 +15,20 @@ export default function MessageList({
   bottomRef,
 }: Props) {
   return (
-    <div className="flex-grow overflow-y-auto mb-4 flex justify-center">
-      <div className="flex flex-col w-full max-w-[720px] space-y-3 px-4">
-        {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
-        ))}
+    <div
+      className="flex-grow overflow-y-auto overflow-x-auto mb-4 flex justify-center
+  scrollbar-thin scrollbar-thumb-rounded
+  dark:scrollbar-thumb-gray-600
+  scrollbar-track-transparent"
+    >
+      <div className="flex flex-col w-full max-w-[720px] space-y-3 px-4 min-w-0 break-words whitespace-pre-wrap">
+        {messages.map((msg, i) =>
+          msg.from === "user" ? (
+            <UserMessageBubble key={i} text={msg.text} />
+          ) : (
+            <BotMessageBubble key={i} text={msg.text} />
+          )
+        )}
 
         {loadingResponse && (
           <motion.div

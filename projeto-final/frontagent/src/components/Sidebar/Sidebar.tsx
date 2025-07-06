@@ -32,7 +32,6 @@ export default function Sidebar() {
     fetchAssistants();
   }, [fetchAssistants]);
 
-  // Usando useLayoutEffect para garantir sincronização rápida na montagem
   useLayoutEffect(() => {
     const pathId = location.pathname.slice(1);
     if (pathId && pathId !== String(selected)) {
@@ -57,61 +56,68 @@ export default function Sidebar() {
         transform
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         md:static md:translate-x-0 md:flex md:flex-col
+        flex flex-col justify-between
       `}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 cursor-pointer"
-              aria-label="Home"
+      {/* Conteúdo principal da sidebar */}
+      <div>
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+          {!isCollapsed && (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                onClick={() => isMobile && setOpen(false)}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 cursor-pointer"
+                aria-label="Home"
+              >
+                <Bot className="w-7 h-7 text-primary" />
+              </Link>
+            </div>
+          )}
+          {isMobile ? (
+            <button
+              onClick={() => setOpen(false)}
+              className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
             >
-              <Bot className="w-7 h-7 text-primary" />
-            </Link>
-          </div>
-        )}
-        {isMobile ? (
-          <button
+              <X className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              onClick={toggleCollapsed}
+              className="p-2 cursor-pointer rounded hover:bg-gray-200 dark:hover:bg-gray-800"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        {/* Ações principais */}
+        <div className="flex flex-col gap-2 p-4">
+          <SidebarItem
+            isMobile={isMobile}
+            icon={<Plus className="w-5 h-5" />}
+            label="Nova conversa"
+            to="/"
             onClick={() => setOpen(false)}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        ) : (
-          <button
-            onClick={toggleCollapsed}
-            className="p-2 cursor-pointer rounded hover:bg-gray-200 dark:hover:bg-gray-800"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        )}
+          />
+          <SidebarItem
+            isMobile={isMobile}
+            icon={<Search className="w-5 h-5" />}
+            label="Buscar chat"
+          />
+        </div>
+
+        <div className="border-t dark:border-gray-700" />
+
+        {/* Lista de chats */}
+        <ListChats isCollapsed={isCollapsed} onSelect={handleSelect} />
       </div>
 
-      {/* Ações principais */}
-      <div className="flex flex-col gap-2 p-4">
-        <SidebarItem
-          isMobile={isMobile}
-          icon={<Plus className="w-5 h-5" />}
-          label="Nova conversa"
-          to="/"
-          onClick={() => setOpen(false)}
-        />
-        <SidebarItem
-          isMobile={isMobile}
-          icon={<Search className="w-5 h-5" />}
-          label="Buscar chat"
-        />
+      {/* Footer sempre visível */}
+      <div>
+        <Login />
       </div>
-
-      <div className="border-t dark:border-gray-700" />
-
-      {/* Lista de chats */}
-      <ListChats isCollapsed={isCollapsed} onSelect={handleSelect} />
-
-      {/* Footer */}
-      {!isCollapsed && <Login />}
     </aside>
   );
 }

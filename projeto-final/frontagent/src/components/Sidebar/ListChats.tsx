@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
+import { useState, useRef, useEffect } from "react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -15,7 +15,7 @@ import {
 
 interface Props {
   isCollapsed: boolean;
-  onSelect: (id: string | number) => void;
+  onSelect: (id: string) => void;
 }
 
 export default function ListChats({ isCollapsed, onSelect }: Props) {
@@ -23,15 +23,15 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
   const updateAssistantName = useAssistantsStore(
     (state) => state.updateAssistantName
   );
-  const [openMenuId, setOpenMenuId] = useState<string | number | null>(null);
-  const [editingId, setEditingId] = useState<string | number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [, setDeleteId] = useState<string | number | null>(null);
+  const [, setDeleteId] = useState<string | null>(null);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const handleEdit = (assistantId: string | number, currentName: string) => {
+  const handleEdit = (assistantId: string, currentName: string) => {
     setEditingId(assistantId);
     setEditValue(currentName);
     setOpenMenuId(null);
@@ -45,7 +45,7 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
     }
   };
 
-  const openDeleteDialog = (id: string | number) => {
+  const openDeleteDialog = (id: string) => {
     setDeleteId(id);
     setDeleteDialogOpen(true);
     setOpenMenuId(null);
@@ -67,82 +67,81 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
   return (
     <>
       <div className="flex-1 overflow-y-auto px-2 space-y-1 mt-2">
-        {assistants.map((assistant) => (
-          <div
-            key={assistant.id}
-            className="relative group rounded hover:bg-gray-200 dark:hover:bg-gray-800"
-          >
-            {/* Se estiver editando */}
-            {editingId === assistant.id ? (
-              <input
-                value={editValue}
-                autoFocus
-                onChange={(e) => setEditValue(e.target.value)}
-                onBlur={handleEditSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleEditSubmit();
-                  }
-                }}
-                className="w-full px-2 py-2 bg-transparent outline-none border-b border-blue-500 text-sm"
-              />
-            ) : (
-              <NavLink
-                to={`/${assistant.id}`}
-                className={({ isActive }) =>
-                  `block px-2 py-2 rounded ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-200 dark:hover:bg-gray-800"
-                  }`
-                }
-                onClick={() => onSelect(assistant.id)}
-              >
-                {assistant.name}
-              </NavLink>
-            )}
-
-            {/* Botão do menu */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setOpenMenuId((prev) =>
-                  prev === assistant.id ? null : assistant.id
-                );
-              }}
-              className="absolute cursor-pointer right-2 top-2 p-1 rounded hover:bg-gray-300 dark:hover:bg-gray-700 hidden group-hover:block"
+        {assistants.map((assistant) => {
+          const encodedId = btoa(String(assistant.id));
+          return (
+            <div
+              key={assistant.id}
+              className="relative group rounded hover:bg-gray-200 dark:hover:bg-gray-800"
             >
-              <MoreVertical className="w-4 h-4" />
-            </button>
+              {editingId === encodedId ? (
+                <input
+                  value={editValue}
+                  autoFocus
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={handleEditSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleEditSubmit();
+                    }
+                  }}
+                  className="w-full px-2 py-2 bg-transparent outline-none border-b border-blue-500 text-sm"
+                />
+              ) : (
+                <NavLink
+                  to={`/${encodedId}`}
+                  className={({ isActive }) =>
+                    `block px-2 py-2 rounded ${
+                      isActive
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-gray-200 dark:hover:bg-gray-800"
+                    }`
+                  }
+                  onClick={() => onSelect(encodedId)}
+                >
+                  {assistant.name}
+                </NavLink>
+              )}
 
-            {/* Menu dropdown */}
-            {openMenuId === assistant.id && (
-              <div
-                ref={menuRef}
-                className="absolute right-2 top-8 bg-white dark:bg-gray-900 shadow-md border border-gray-300 dark:border-gray-700 rounded z-50 w-32"
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setOpenMenuId((prev) =>
+                    prev === encodedId ? null : encodedId
+                  );
+                }}
+                className="absolute right-2 top-2 p-1 rounded cursor-pointer block group-hover:block hover:bg-gray-300 dark:hover:bg-gray-700 md:hidden md:group-hover:block"
               >
-                <button
-                  onClick={() => handleEdit(assistant.id, assistant.name)}
-                  className="flex cursor-pointer items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                <MoreVertical className="w-4 h-4" />
+              </button>
+
+              {openMenuId === encodedId && (
+                <div
+                  ref={menuRef}
+                  className="absolute right-2 top-8 bg-white dark:bg-gray-900 shadow-md border border-gray-300 dark:border-gray-700 rounded z-50 w-32"
                 >
-                  <Pencil className="w-4 h-4" /> Renomear
-                </button>
-                <hr />
-                <button
-                  onClick={() => openDeleteDialog(assistant.id)}
-                  className="flex cursor-pointer items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900 dark:text-red-400"
-                >
-                  <Trash2 className="w-4 h-4" /> Deletar
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+                  <button
+                    onClick={() => handleEdit(encodedId, assistant.name)}
+                    className="flex cursor-pointer items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    <Pencil className="w-4 h-4" /> Renomear
+                  </button>
+                  <hr />
+                  <button
+                    onClick={() => openDeleteDialog(encodedId)}
+                    className="flex cursor-pointer items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900 dark:text-red-400"
+                  >
+                    <Trash2 className="w-4 h-4" /> Deletar
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Modal de confirmação fora do menu */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -16,9 +16,9 @@ type ChatStore = {
   isLoadingResponse: boolean;
   connect: () => void;
   disconnect: () => void;
-  sendMessage: (message: string, chatId: number) => void;
-  sendMessageWithCreateChat: (message: string) => Promise<number>;
-  loadHistory: (chatId: number) => Promise<void>;
+  sendMessage: (message: string, chatId: string) => void;
+  sendMessageWithCreateChat: (message: string) => Promise<string>;
+  loadHistory: (chatId: string) => Promise<void>;
   setLoadingResponse: (loading: boolean) => void;
   resetChat: () => void;
   setMessages: (messages: Message[]) => void;
@@ -92,7 +92,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  sendMessage: (message: string, chatId: number) => {
+  sendMessage: (message: string, chatId: string) => {
     const socket = get().socket;
     const token = useAuthStore.getState().accessToken;
 
@@ -121,9 +121,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     get().setLoadingResponse(true);
 
-    return new Promise<number>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       socket.off("chat_created");
-      socket.once("chat_created", (data: { chat_id: number }) => {
+      socket.once("chat_created", (data: { chat_id: string }) => {
         get().setLoadingResponse(false);
         resolve(data.chat_id);
       });
@@ -141,7 +141,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
-  loadHistory: async (chatId: number) => {
+  loadHistory: async (chatId: string) => {
     try {
       const token = useAuthStore.getState().accessToken;
       const res = await api.get(`/api/messages?chat_id=${chatId}`, {
@@ -152,8 +152,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const data = res.data;
       if (Array.isArray(data)) {
         set({ messages: data });
+      } else {
+        throw new Error("Resposta inesperada");
       }
-    } catch (error) {
+    } catch (error: any) {
       throw error;
     }
   },

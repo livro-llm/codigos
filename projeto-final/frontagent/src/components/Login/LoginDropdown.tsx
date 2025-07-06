@@ -10,6 +10,7 @@ import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
 import { useChatStore } from "@/stores/Chat/useChatStore";
 import { useNavigate } from "react-router-dom";
 import { User, LogOut } from "lucide-react";
+import { useSidebarStore } from "@/stores/Sidebar/useSidebarStore";
 
 export function LoginDropdown() {
   const { user, logout } = useAuthStore();
@@ -17,6 +18,7 @@ export function LoginDropdown() {
 
   const resetAssistants = useAssistantsStore((state) => state.resetAssistants);
   const resetChat = useChatStore((state) => state.resetChat);
+  const { setOpen } = useSidebarStore(); // <- aqui
 
   if (!user) return null;
 
@@ -25,8 +27,14 @@ export function LoginDropdown() {
       logout();
       resetAssistants();
       resetChat();
+      setOpen(false);
       navigate("/", { replace: true });
     }
+  };
+
+  const handleProfileClick = () => {
+    setOpen(false);
+    navigate("/profile");
   };
 
   return (
@@ -42,7 +50,7 @@ export function LoginDropdown() {
             <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
               {user.name}
             </span>
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">
+            <span className="text-[9px] text-gray-500 dark:text-gray-400">
               {user.email}
             </span>
           </div>
@@ -61,7 +69,7 @@ export function LoginDropdown() {
 
         <DropdownMenuItem
           className="cursor-pointer"
-          onSelect={() => navigate("/profile")}
+          onSelect={handleProfileClick}
         >
           <div className="flex items-center gap-2">
             <User className="w-4 h-4" />
