@@ -1,25 +1,41 @@
-name: pgai
 services:
-  db:
+  backagent:
+    build:
+      context: ./backagent
+    container_name: backagent
+    env_file:
+      - ./backagent/.env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/postgres
+    depends_on:
+      - database
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backagent:/backagent
+    restart: always
+
+  database:
     image: timescale/timescaledb-ha:pg17
+    container_name: database
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - data:/home/postgres/pgdata/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     depends_on:
       - ollama
 
   vectorizer-worker:
     image: timescale/pgai-vectorizer-worker:latest
     environment:
-      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@db:5432/postgres
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@database:5432/postgres
       OLLAMA_HOST: http://ollama:11435
     command: ["--poll-interval", "5s"]
     depends_on:
-      - db
+      - database
       - ollama
 
   ollama:
@@ -28,23 +44,11 @@ services:
     environment:
       - OLLAMA_HOST=0.0.0.0:11435
     ports:
-      - "11435:11435" # Porta externa:interna
+      - "11435:11435"
     volumes:
       - ollama:/root/.ollama
-    restart: unless-stopped
-
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: open-webui
-    ports:
-      - "3000:8080"
-    environment:
-      - OLLAMA_API_BASE_URL=http://ollama:11435
-    depends_on:
-      - ollama
     restart: unless-stopped
 
 volumes:
   data:
   ollama:
-  open-webui:

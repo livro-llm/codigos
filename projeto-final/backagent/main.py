@@ -14,7 +14,6 @@ def create_app():
 
     db.init_app(app)
     cors.init_app(app)
-    # Inicializar socketio com eventlet
     socketio.init_app(app, async_mode="eventlet")
     jwt.init_app(app)
 
@@ -33,4 +32,4 @@ app = create_app()
 logger.info("🟢 Aplicação iniciada com sucesso")
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)

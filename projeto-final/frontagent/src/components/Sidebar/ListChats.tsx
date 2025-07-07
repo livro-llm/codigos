@@ -66,7 +66,7 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-2 space-y-1 mt-2">
+      <div className="flex flex-col h-full overflow-y-auto px-2 space-y-1 mt-2 min-h-0">
         {assistants.map((assistant) => {
           const encodedId = btoa(String(assistant.id));
           return (

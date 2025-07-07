@@ -10,6 +10,7 @@ import ListChats from "@/components/Sidebar/ListChats";
 export default function Sidebar() {
   const selectAssistant = useAssistantsStore((state) => state.selectAssistant);
   const fetchAssistants = useAssistantsStore((state) => state.fetchAssistants);
+  const assistants = useAssistantsStore((state) => state.assistants);
   const selected = useAssistantsStore((state) => state.selectedAssistant);
 
   const { isCollapsed, toggleCollapsed, isOpen, setOpen } = useSidebarStore();
@@ -46,6 +47,11 @@ export default function Sidebar() {
 
   const sidebarWidth = isCollapsed ? "w-16" : "w-64";
 
+  const itemHeight = 40; // px - ajuste conforme altura do item
+  const maxVisibleItems = 15;
+  const maxHeightPx = itemHeight * maxVisibleItems;
+  const hasScroll = assistants.length > maxVisibleItems;
+
   return (
     <aside
       className={`
@@ -59,8 +65,7 @@ export default function Sidebar() {
         flex flex-col justify-between
       `}
     >
-      {/* Conteúdo principal da sidebar */}
-      <div>
+      <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           {!isCollapsed && (
@@ -92,7 +97,6 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* Ações principais */}
         <div className="flex flex-col gap-2 p-4">
           <SidebarItem
             isMobile={isMobile}
@@ -110,11 +114,16 @@ export default function Sidebar() {
 
         <div className="border-t dark:border-gray-700" />
 
-        {/* Lista de chats */}
-        <ListChats isCollapsed={isCollapsed} onSelect={handleSelect} />
+        <div
+          style={{ maxHeight: `${maxHeightPx}px` }}
+          className={`flex-grow min-h-0 ${
+            hasScroll ? "overflow-y-auto" : "overflow-y-visible"
+          }`}
+        >
+          <ListChats isCollapsed={isCollapsed} onSelect={handleSelect} />
+        </div>
       </div>
 
-      {/* Footer sempre visível */}
       <div>
         <Login />
       </div>

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo "Subindo containers..."
-docker compose up --build -d db
-docker compose run --rm --entrypoint "python -m pgai install -d postgres://postgres:postgres@db:5432/postgres" vectorizer-worker
+docker compose up --build -d database
+docker compose run --rm --entrypoint "python -m pgai install -d postgres://postgres:postgres@database:5432/postgres" vectorizer-worker
 docker compose up -d --build
 
 echo "Aguardando containers iniciarem..."

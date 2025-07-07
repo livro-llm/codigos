@@ -1,12 +1,13 @@
 import os
 from dotenv import load_dotenv
-from langchain_ollama import OllamaLLM
 from langchain_openai import ChatOpenAI
+from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
+from app.services.streaming_handler import SocketIOCallbackHandler
 
 load_dotenv()
 
-USE_OLLAMA = False  # Pode configurar via variável de ambiente, se quiser
+USE_OLLAMA = False
 
 template = """
 Você é um assistente jurídico altamente capacitado, com profundo conhecimento sobre leis brasileiras,
@@ -25,20 +26,23 @@ Resposta clara e objetiva:
 prompt = ChatPromptTemplate.from_template(template)
 
 
-def get_chain():
-    if USE_OLLAMA:
-        model = OllamaLLM(model="phi3:mini")
-    else:
-        openai_key = os.getenv("OPEN_API_KEY")
-        if not openai_key:
-            raise ValueError("OPEN_API_KEY não encontrado no .env")
+def get_chain(user_id: str, sid: str):
+    handler = SocketIOCallbackHandler(user_id, sid)
 
+    if USE_OLLAMA:
+        model = OllamaLLM(
+            model="phi3:mini",
+            temperature=0.7,
+            streaming=True,
+            callbacks=[handler]
+        )
+    else:
         model = ChatOpenAI(
             model="gpt-4",
             temperature=0.7,
-            openai_api_key=openai_key
+            streaming=True,
+            openai_api_key=os.getenv("OPEN_API_KEY"),
+            callbacks=[handler],
         )
+
     return prompt | model
-
-
-chain = get_chain()
