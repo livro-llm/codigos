@@ -66,7 +66,6 @@ export default function Sidebar() {
       `}
     >
       <div className="flex flex-col h-full">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           {!isCollapsed && (
             <div className="flex items-center gap-2">

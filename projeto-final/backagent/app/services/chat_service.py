@@ -125,3 +125,15 @@ def delete_chat_and_messages(user_id: int, chat_id: int) -> bool:
         logger.error(f"Erro ao deletar chat ID {chat_id}: {e}")
         db.session.rollback()
         return False
+
+
+def update_chat_title(chat_id: int, new_title: str) -> Chat:
+    chat = Chat.query.filter_by(id=chat_id).first()
+    if not chat:
+        logger.warning(f"❌ Chat ID {chat_id} não encontrado para atualização")
+        return None
+
+    chat.title = new_title
+    db.session.commit()
+    logger.info(f"✅ Chat ID {chat_id} atualizado com título: {new_title}")
+    return chat

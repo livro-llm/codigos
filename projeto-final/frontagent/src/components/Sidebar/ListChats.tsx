@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
 import { useState, useRef, useEffect } from "react";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
@@ -19,11 +19,13 @@ interface Props {
 }
 
 export default function ListChats({ isCollapsed, onSelect }: Props) {
+  const navigate = useNavigate();
   const assistants = useAssistantsStore((state) => state.assistants);
-  const updateAssistantName = useAssistantsStore(
-    (state) => state.updateAssistantName
-  );
+
   const deleteAssistant = useAssistantsStore((state) => state.deleteAssistant);
+  const updateAssistantOnServer = useAssistantsStore(
+    (state) => state.updateAssistantOnServer
+  );
   const fetchAssistants = useAssistantsStore((state) => state.fetchAssistants);
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -43,11 +45,16 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
     setOpenMenuId(null);
   };
 
-  const handleEditSubmit = () => {
+  const handleEditSubmit = async () => {
     if (editingId != null) {
-      updateAssistantName(editingId, editValue);
-      alert("Texto editado");
-      setEditingId(null);
+      try {
+        const chatId = atob(editingId);
+        await updateAssistantOnServer(chatId, editValue);
+        await fetchAssistants();
+        setEditingId(null);
+      } catch {
+        console.error("Erro ao atualizar título. Tente novamente.");
+      }
     }
   };
 
@@ -67,6 +74,7 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
 
       setDeleteDialogOpen(false);
       setDeleteId(null);
+      navigate("/");
     } catch (error) {
       console.error("Erro ao deletar chat:", error);
       alert("Erro ao deletar chat. Tente novamente.");

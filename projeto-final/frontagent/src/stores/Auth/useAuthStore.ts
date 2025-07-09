@@ -4,6 +4,7 @@ type User = {
   name: string;
   email: string;
   picture: string;
+  loginAt?: string;
 };
 
 type AuthStore = {
@@ -30,6 +31,9 @@ export const useAuthStore = create<AuthStore>((set) => {
     refreshToken,
 
     setUser: (user, accessToken, refreshToken) => {
+      if (!user.loginAt) {
+        user.loginAt = new Date().toISOString();
+      }
       localStorage.setItem(userKey, JSON.stringify(user));
       localStorage.setItem(accessKey, accessToken);
       localStorage.setItem(refreshKey, refreshToken);

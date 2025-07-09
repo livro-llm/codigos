@@ -14,6 +14,10 @@ interface AssistantsState {
   addAssistant: (assistant: Assistant) => void;
   resetAssistants: () => void;
   updateAssistantName: (id: string | number, newName: string) => void;
+  updateAssistantOnServer: (
+    id: string | number,
+    newTitle: string
+  ) => Promise<void>;
   deleteAssistant: (id: string | number) => Promise<void>;
 }
 
@@ -66,6 +70,20 @@ export const useAssistantsStore = create<AssistantsState>((set, get) => ({
       await get().fetchAssistants();
     } catch (error) {
       console.error("Erro ao deletar chat:", error);
+      throw error;
+    }
+  },
+
+  updateAssistantOnServer: async (id: string | number, newTitle: string) => {
+    try {
+      await api.put(`/api/chats/${id}`, { title: newTitle });
+      set((state) => ({
+        assistants: state.assistants.map((a) =>
+          a.id === id ? { ...a, name: newTitle } : a
+        ),
+      }));
+    } catch (error) {
+      console.error("Erro ao atualizar título do chat:", error);
       throw error;
     }
   },

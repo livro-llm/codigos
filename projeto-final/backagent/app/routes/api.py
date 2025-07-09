@@ -1,7 +1,13 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.user_service import get_user_by_id
-from app.services.chat_service import create_chat_for_user, get_chat_by_id, get_chats_by_user_id, delete_chat_and_messages
+from app.services.chat_service import (
+    create_chat_for_user,
+    get_chat_by_id,
+    get_chats_by_user_id,
+    delete_chat_and_messages,
+    update_chat_title
+)
 from app.services.message_service import get_messages_by_chat_id
 from app.schemas.user import UserSchema
 from app.schemas.chat import ChatSchema
@@ -96,3 +102,24 @@ def delete_chat(chat_id):
         return jsonify({"msg": "Chat não encontrado ou erro ao deletar"}), 404
 
     return jsonify({"msg": "Chat e mensagens deletados com sucesso"}), 200
+
+
+@api_bp.route("/chats/<int:chat_id>", methods=["PUT"])
+@jwt_required()
+def update_chat(chat_id):
+    user_id = int(get_jwt_identity())
+    data = request.get_json()
+    new_title = data.get("title")
+
+    if not new_title or new_title.strip() == "":
+        return jsonify({"msg": "Título do chat é obrigatório"}), 400
+
+    chat = get_chat_by_id(chat_id)
+
+    if not chat or chat.user_id != user_id:
+        return jsonify({"msg": "Acesso negado ao chat"}), 403
+
+    updated_chat = update_chat_title(chat_id, new_title.strip())
+
+    logger.info(f"📝 Chat ID {chat_id} atualizado com novo título: {new_title}")
+    return jsonify(ChatSchema.from_orm(updated_chat).dict())
