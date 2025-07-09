@@ -25,6 +25,21 @@ function splitThinkAndResponse(text: string) {
   return { thinkContent: null, responseContent: text };
 }
 
+function normalizeMarkdown(text: string) {
+  return text.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+const markdownComponents = {
+  img: ({ src, alt }: { src?: string; alt?: string }) => (
+    <img
+      src={src}
+      alt={alt}
+      className="my-4 max-w-full h-auto rounded-md"
+      loading="lazy"
+    />
+  ),
+};
+
 export default function BotMessageBubble({ text }: { text: string }) {
   const { thinkContent, responseContent } = splitThinkAndResponse(text);
   const [copied, setCopied] = useState(false);
@@ -65,7 +80,7 @@ export default function BotMessageBubble({ text }: { text: string }) {
   }, []);
 
   return (
-    <div className="group w-fit max-w-[600px] min-w-0 self-start items-start flex flex-col mb-10">
+    <div className="group w-fit max-w-[800px] min-w-0 self-start items-start flex flex-col mb-10">
       <div className="px-6 py-4 rounded-2xl bg-gray-200 dark:bg-gray-700 text-black dark:text-white">
         {thinkContent && (
           <div className="mb-4 p-4 bg-yellow-100 dark:bg-yellow-700 rounded-md font-mono text-sm border-l-4 border-yellow-400">
@@ -77,8 +92,8 @@ export default function BotMessageBubble({ text }: { text: string }) {
 
         <div
           className="
-            prose dark:prose-invert max-w-none break-words whitespace-pre-wrap overflow-wrap-anywhere
-            max-h-[300px] overflow-auto
+            prose dark:prose-invert max-w-none break-words whitespace-normal overflow-wrap-anywhere
+            max-h-[500px] overflow-auto
             scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent
             dark:scrollbar-thumb-gray-600
           "
@@ -88,8 +103,9 @@ export default function BotMessageBubble({ text }: { text: string }) {
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw, rehypeHighlight]}
             skipHtml={false}
+            components={markdownComponents}
           >
-            {responseContent}
+            {normalizeMarkdown(responseContent)}
           </ReactMarkdown>
         </div>
       </div>

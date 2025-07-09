@@ -14,9 +14,10 @@ interface AssistantsState {
   addAssistant: (assistant: Assistant) => void;
   resetAssistants: () => void;
   updateAssistantName: (id: string | number, newName: string) => void;
+  deleteAssistant: (id: string | number) => Promise<void>;
 }
 
-export const useAssistantsStore = create<AssistantsState>((set) => ({
+export const useAssistantsStore = create<AssistantsState>((set, get) => ({
   assistants: [],
   selectedAssistant: null,
 
@@ -37,6 +38,8 @@ export const useAssistantsStore = create<AssistantsState>((set) => ({
       set({ assistants: formatted });
       if (formatted.length > 0) {
         set({ selectedAssistant: formatted[0].id });
+      } else {
+        set({ selectedAssistant: null });
       }
     } catch (err) {
       console.error("Erro ao buscar chats:", err);
@@ -54,4 +57,16 @@ export const useAssistantsStore = create<AssistantsState>((set) => ({
         a.id === id ? { ...a, name: newName } : a
       ),
     })),
+
+  deleteAssistant: async (id) => {
+    try {
+      const chatId = typeof id === "string" ? atob(id) : id;
+
+      await api.delete(`/api/chats/${chatId}`);
+      await get().fetchAssistants();
+    } catch (error) {
+      console.error("Erro ao deletar chat:", error);
+      throw error;
+    }
+  },
 }));

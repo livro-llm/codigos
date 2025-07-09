@@ -14,12 +14,14 @@ type ChatStore = {
   socket: Socket | null;
   messages: Message[];
   isLoadingResponse: boolean;
+  isStreaming: boolean; // Novo estado
   connect: () => void;
   disconnect: () => void;
   sendMessage: (message: string, chatId: string) => void;
   sendMessageWithCreateChat: (message: string) => Promise<string>;
   loadHistory: (chatId: string) => Promise<void>;
   setLoadingResponse: (loading: boolean) => void;
+  setIsStreaming: (streaming: boolean) => void; // setter
   resetChat: () => void;
   setMessages: (messages: Message[]) => void;
 };
@@ -28,10 +30,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   socket: null,
   messages: [],
   isLoadingResponse: false,
+  isStreaming: false,
 
   setLoadingResponse: (loading: boolean) => set({ isLoadingResponse: loading }),
+  setIsStreaming: (streaming: boolean) => set({ isStreaming: streaming }),
 
-  resetChat: () => set({ messages: [], isLoadingResponse: false }),
+  resetChat: () =>
+    set({ messages: [], isLoadingResponse: false, isStreaming: false }),
 
   setMessages: (messages: Message[]) => set({ messages }),
 
@@ -101,7 +106,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    get().setLoadingResponse(true);
+    // Ajusta isStreaming conforme seu backend (se quiser passar por parâmetro, aí precisa melhorar)
+    set({ isLoadingResponse: true, isStreaming: true });
 
     socket.emit("chat_message", {
       message,
@@ -119,12 +125,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       throw new Error("Socket não conectado ou token ausente");
     }
 
-    get().setLoadingResponse(true);
+    set({ isLoadingResponse: true, isStreaming: true });
 
     return new Promise<string>((resolve, reject) => {
       socket.off("chat_created");
       socket.once("chat_created", (data: { chat_id: string }) => {
-        get().setLoadingResponse(false);
+        set({ isLoadingResponse: false, isStreaming: false });
         resolve(data.chat_id);
       });
 
@@ -135,7 +141,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
 
       setTimeout(() => {
-        get().setLoadingResponse(false);
+        set({ isLoadingResponse: false, isStreaming: false });
         reject(new Error("Tempo esgotado ao criar chat"));
       }, 10000);
     });

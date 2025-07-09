@@ -7,6 +7,7 @@ import MessageList from "@/components/Chat/MessageList";
 import ChatInput from "@/components/Chat/ChatInput";
 import Loading from "@/components/Reusable/Loading";
 import { useAssistantsStore } from "@/stores/Chat/useAssistantsStore";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function ChatArea() {
   const messages = useChatStore((state) => state.messages);
@@ -29,7 +30,8 @@ export default function ChatArea() {
   const [input, setInput] = useState("");
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Decodifica o id base64 com segurança e valida
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     if (!encodedId) {
       setChatId(null);
@@ -44,30 +46,25 @@ export default function ChatArea() {
       decodedId = null;
     }
 
-    // Validação simples: id deve existir e ser não vazio
     if (!decodedId || decodedId.trim() === "") {
       navigate("/", { replace: true });
       return;
     }
 
-    // Atualiza somente se for diferente
     if (decodedId !== chatId) {
       setChatId(decodedId);
     }
   }, [encodedId, chatId, navigate, resetChat]);
 
-  // Conectar/desconectar socket
   useEffect(() => {
     connect();
     return () => disconnect();
   }, [connect, disconnect]);
 
-  // Limpa chat quando chatId for null (rota home)
   useEffect(() => {
     if (chatId === null) resetChat();
   }, [chatId, resetChat]);
 
-  // Carrega histórico se chatId válido
   useEffect(() => {
     if (chatId === null) return;
 
@@ -84,15 +81,17 @@ export default function ChatArea() {
       .finally(() => setLoadingHistory(false));
   }, [chatId, loadHistory, navigate]);
 
-  // Scroll automático para o fim das mensagens
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  // Scroll automático quando mensagens mudam (e não está carregando)
   useEffect(() => {
     if (loadingHistory) return;
-    if (bottomRef.current)
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    const timeout = setTimeout(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 50); // Pequeno delay para garantir que o DOM foi atualizado
+    return () => clearTimeout(timeout);
   }, [messages, loadingHistory]);
 
-  // Enviar mensagem
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
@@ -100,12 +99,11 @@ export default function ChatArea() {
     setMessages([...messages, { text: trimmed, from: "user" }]);
     setInput("");
 
-    // Se não existe chatId, cria chat novo
     if (chatId === null) {
       try {
         const newChatId = await sendMessageWithCreateChat(trimmed);
         await fetchAssistants();
-        setChatId(newChatId.toString()); // converte para string para manter coerência
+        setChatId(newChatId.toString());
         navigate(`/${btoa(String(newChatId))}`, { replace: true });
       } catch (error) {
         console.error("Erro ao enviar e criar chat:", error);
@@ -126,20 +124,28 @@ export default function ChatArea() {
           <Loading />
         </div>
       ) : (
-        <>
-          <MessageList
-            messages={messages}
-            loadingResponse={loadingResponse}
-            bottomRef={bottomRef}
-          />
-          <ChatInput
-            input={input}
-            setInput={setInput}
-            handleSend={handleSend}
-          />
-        </>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="chat-content"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent dark:scrollbar-thumb-gray-600 px-2 space-y-1 mt-2 min-h-0"
+          >
+            <MessageList
+              messages={messages}
+              loadingResponse={loadingResponse}
+              bottomRef={bottomRef}
+            />
+            <ChatInput
+              input={input}
+              setInput={setInput}
+              handleSend={handleSend}
+            />
+          </motion.div>
+        </AnimatePresence>
       )}
-
       <div ref={bottomRef} />
     </div>
   );

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.user_service import get_user_by_id
-from app.services.chat_service import create_chat_for_user, get_chat_by_id, get_chats_by_user_id
+from app.services.chat_service import create_chat_for_user, get_chat_by_id, get_chats_by_user_id, delete_chat_and_messages
 from app.services.message_service import get_messages_by_chat_id
 from app.schemas.user import UserSchema
 from app.schemas.chat import ChatSchema
@@ -84,3 +84,15 @@ def get_user_chats():
     logger.info(
         f"✅ Retornando {len(chats_serialized)} chats para o usuário {user_id}")
     return jsonify(chats_serialized)
+
+
+@api_bp.route("/chats/<int:chat_id>", methods=["DELETE"])
+@jwt_required()
+def delete_chat(chat_id):
+    user_id = int(get_jwt_identity())
+
+    success = delete_chat_and_messages(user_id, chat_id)
+    if not success:
+        return jsonify({"msg": "Chat não encontrado ou erro ao deletar"}), 404
+
+    return jsonify({"msg": "Chat e mensagens deletados com sucesso"}), 200

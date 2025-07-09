@@ -1,11 +1,10 @@
-# app/routes/websocket.py
-
 from flask_socketio import emit, join_room
 from flask import request
 from app.extensions import socketio
 from app.library.logger import logger
 from app.services.chat_service import process_chat_message
 from flask_jwt_extended import decode_token
+from app.llm import ENABLE_STREAMING
 
 
 @socketio.on("connect")
@@ -41,8 +40,7 @@ def handle_chat(data):
 
     try:
         user_id, reply_generator, created_chat_id = process_chat_message(
-            token, chat_id, user_msg, sid=request.sid
-        )
+            token, chat_id, user_msg, sid=request.sid)
     except Exception as e:
         emit("error", {"message": str(e)})
         return
@@ -52,8 +50,11 @@ def handle_chat(data):
 
     emit("user_message", {"message": user_msg}, to=str(user_id))
 
-    full_reply = ""
-    for token in reply_generator:
-        full_reply += token
-
-    emit("server_message", {"message": full_reply}, to=str(user_id))
+    if ENABLE_STREAMING:
+        for token in reply_generator:
+            emit("server_message", {"message": token}, to=str(user_id))
+    else:
+        full_reply = ""
+        for token in reply_generator:
+            full_reply += token
+        emit("server_message", {"message": full_reply}, to=str(user_id))

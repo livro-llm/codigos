@@ -1,81 +1,203 @@
+.prose pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose code {
+  word-break: break-word;
+}
+
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+@media (min-width: 768px) {
+  .prose table {
+    display: table;
+    overflow-x: visible;
+    width: auto;
+  }
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 .prose h1 {
-  font-size: 2.25rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 0.5em;
+  margin: 1rem 0 0.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
-
 .prose h2 {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 600;
-  margin-bottom: 0.5em;
+  margin: 1.25rem 0 0.6rem;
+  line-height: 1.3;
 }
-
+.prose h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
 .prose p {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin: 0.75em 0;
+  line-height: 1.65;
+  font-size: 1rem;
+}
+.prose ol,
+.prose ul {
+  padding-left: 2rem;
+  margin: 0.75em 0;
+  font-size: 1rem;
   line-height: 1.6;
 }
-
 .prose ol {
   list-style-type: decimal;
-  padding-left: 1.5em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
 }
-
 .prose ul {
   list-style-type: disc;
-  padding-left: 1.5em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+}
+.prose a {
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+.prose a:hover,
+.prose a:focus {
+  text-decoration: none;
 }
 
 .prose table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin-top: 1em;
-  margin-bottom: 1em;
+  margin: 1.5em 0;
   border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  font-size: 0.95rem;
 }
-
-.prose th,
-.prose td {
-  border: 1px solid #ddd;
-  padding: 0.5em 1em;
-  text-align: left;
-  background-color: 444548;
-}
-
 .prose th {
-  background-color: #444548;
   font-weight: 600;
-  color: white;
+  padding: 0.75em 1.25em;
+  text-align: left;
 }
-
 .prose th:first-child {
   border-top-left-radius: 0.75rem;
 }
-
 .prose th:last-child {
   border-top-right-radius: 0.75rem;
 }
-
+.prose td {
+  padding: 0.75em 1.25em;
+  border-top: 1px solid #e5e7eb;
+}
 .prose tr:last-child td:first-child {
   border-bottom-left-radius: 0.75rem;
 }
-
 .prose tr:last-child td:last-child {
   border-bottom-right-radius: 0.75rem;
 }
 
+.light .prose h1 {
+  color: #111827;
+}
+.light .prose h2 {
+  color: #1f2937;
+}
+.light .prose h3 {
+  color: #374151;
+}
+.light .prose p,
+.light .prose ol,
+.light .prose ul,
+.light .prose td {
+  color: #4b5563;
+}
+.light .prose a {
+  color: #2563eb;
+}
+.light .prose a:hover,
+.light .prose a:focus {
+  color: #1e40af;
+}
+
+.light .prose table {
+  background-color: #f9fafb;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+.light .prose th {
+  background-color: #374151;
+  color: white;
+}
+.light .prose td {
+  background-color: white;
+}
+.light .prose tbody tr:nth-child(odd) td {
+  background-color: #f3f4f6;
+}
+.light .prose tbody tr:hover td {
+  background-color: #e0e7ff;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose p,
+.dark .prose ol,
+.dark .prose ul,
+.dark .prose td {
+  color: #d1d5db;
+}
+.dark .prose a {
+  color: #60a5fa;
+}
+.dark .prose a:hover,
+.dark .prose a:focus {
+  color: #3b82f6;
+}
+
+.dark .prose table {
+  background-color: #1f2937;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+.dark .prose th {
+  background-color: #374151;
+  color: #f9fafb;
+}
+.dark .prose td {
+  background-color: #111827;
+}
+.dark .prose tbody tr:nth-child(odd) td {
+  background-color: #273449;
+}
+.dark .prose tbody tr:hover td {
+  background-color: #3b4a6b;
+}
+
 .hljs {
-  border-radius: 0.75rem;
-  padding: 1rem !important;
-  overflow-x: auto;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
   background-color: #0d1117 !important;
   color: #c9d1d9;
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-radius: 0.75rem;
+  padding: 1.25rem !important;
+  overflow-x: auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 transparent;
+}
+.hljs::-webkit-scrollbar {
+  height: 8px;
+}
+.hljs::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 10px;
 }

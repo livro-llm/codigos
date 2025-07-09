@@ -23,13 +23,19 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
   const updateAssistantName = useAssistantsStore(
     (state) => state.updateAssistantName
   );
+  const deleteAssistant = useAssistantsStore((state) => state.deleteAssistant);
+  const fetchAssistants = useAssistantsStore((state) => state.fetchAssistants);
+
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleEdit = (assistantId: string, currentName: string) => {
     setEditingId(assistantId);
@@ -51,6 +57,24 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
     setOpenMenuId(null);
   };
 
+  async function handleConfirmDelete() {
+    if (!deleteId) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteAssistant(deleteId);
+      await fetchAssistants();
+
+      setDeleteDialogOpen(false);
+      setDeleteId(null);
+    } catch (error) {
+      console.error("Erro ao deletar chat:", error);
+      alert("Erro ao deletar chat. Tente novamente.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -64,14 +88,34 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
 
   if (isCollapsed) return null;
 
+  function shouldOpenUpwards(element: HTMLDivElement | null) {
+    if (!element) return false;
+
+    const rect = element.getBoundingClientRect();
+    const viewportHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+
+    return viewportHeight - rect.bottom < 200;
+  }
+
   return (
     <>
-      <div className="flex flex-col h-full overflow-y-auto px-2 space-y-1 mt-2 min-h-0">
+      <div className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar scrollbar-thumb-rounded scrollbar-thumb-gray-400 scrollbar-track-transparent dark:scrollbar-thumb-gray-700 px-2 space-y-1 mt-2 min-h-0">
         {assistants.map((assistant) => {
           const encodedId = btoa(String(assistant.id));
+
+          if (!itemRefs.current[encodedId]) {
+            itemRefs.current[encodedId] = null;
+          }
+
+          const openUpwards = shouldOpenUpwards(itemRefs.current[encodedId]);
+
           return (
             <div
               key={assistant.id}
+              ref={(el) => {
+                itemRefs.current[encodedId] = el;
+              }}
               className="relative group rounded hover:bg-gray-200 dark:hover:bg-gray-800"
             >
               {editingId === encodedId ? (
@@ -120,7 +164,11 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
               {openMenuId === encodedId && (
                 <div
                   ref={menuRef}
-                  className="absolute right-2 top-8 bg-white dark:bg-gray-900 shadow-md border border-gray-300 dark:border-gray-700 rounded z-50 w-32"
+                  className={`absolute right-2 bg-white dark:bg-gray-900 shadow-md border border-gray-300 dark:border-gray-700 rounded z-50 w-32`}
+                  style={{
+                    top: openUpwards ? undefined : "2.5rem",
+                    bottom: openUpwards ? "2.5rem" : undefined,
+                  }}
                 >
                   <button
                     onClick={() => handleEdit(encodedId, assistant.name)}
@@ -156,13 +204,10 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
             </AlertDialogCancel>
             <AlertDialogAction
               className="cursor-pointer"
-              onClick={() => {
-                alert("Deletado com sucesso");
-                setDeleteDialogOpen(false);
-                setDeleteId(null);
-              }}
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
             >
-              Confirmar
+              {isDeleting ? "Deletando..." : "Confirmar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

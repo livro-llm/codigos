@@ -8,6 +8,7 @@ from app.services.streaming_handler import SocketIOCallbackHandler
 load_dotenv()
 
 USE_OLLAMA = False
+ENABLE_STREAMING = False
 
 template = """
 Você é um assistente jurídico altamente capacitado, com profundo conhecimento sobre leis brasileiras,
@@ -33,14 +34,14 @@ def get_chain(user_id: str, sid: str):
         model = OllamaLLM(
             model="phi3:mini",
             temperature=0.7,
-            streaming=True,
+            streaming=ENABLE_STREAMING,
             callbacks=[handler]
         )
     else:
         model = ChatOpenAI(
             model="gpt-4",
             temperature=0.7,
-            streaming=True,
+            streaming=ENABLE_STREAMING,
             openai_api_key=os.getenv("OPEN_API_KEY"),
             callbacks=[handler],
         )
