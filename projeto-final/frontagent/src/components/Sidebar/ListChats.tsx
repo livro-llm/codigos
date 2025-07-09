@@ -35,8 +35,10 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  // Estado para armazenar o nome do assistente selecionado
+  const [selectedAssistantName, setSelectedAssistantName] = useState("");
 
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleEdit = (assistantId: string, currentName: string) => {
@@ -57,6 +59,12 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
       }
     }
   };
+
+  useEffect(() => {
+    if (selectedAssistantName) {
+      document.title = selectedAssistantName;
+    }
+  }, [selectedAssistantName]);
 
   const openDeleteDialog = (id: string) => {
     setDeleteId(id);
@@ -150,7 +158,10 @@ export default function ListChats({ isCollapsed, onSelect }: Props) {
                         : "hover:bg-gray-200 dark:hover:bg-gray-800"
                     }`
                   }
-                  onClick={() => onSelect(encodedId)}
+                  onClick={() => {
+                    onSelect(encodedId);
+                    setSelectedAssistantName(assistant.name); // Atualiza título da página
+                  }}
                 >
                   {assistant.name}
                 </NavLink>

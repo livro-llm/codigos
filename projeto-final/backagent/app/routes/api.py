@@ -123,3 +123,19 @@ def update_chat(chat_id):
 
     logger.info(f"📝 Chat ID {chat_id} atualizado com novo título: {new_title}")
     return jsonify(ChatSchema.from_orm(updated_chat).dict())
+
+
+@api_bp.route("/chats", methods=["DELETE"])
+@jwt_required()
+def delete_all_chats():
+    user_id = int(get_jwt_identity())
+    try:
+        chats = get_chats_by_user_id(user_id)
+        for chat in chats:
+            delete_chat_and_messages(user_id, chat.id)
+        logger.info(f"🗑️ Todos os chats deletados para usuário {user_id}")
+        return jsonify({"msg": "Todos os chats deletados com sucesso"}), 200
+    except Exception as e:
+        logger.error(
+            f"Erro ao deletar todos os chats do usuário {user_id}: {e}")
+        return jsonify({"msg": "Erro ao deletar chats"}), 500
