@@ -54,6 +54,7 @@ def process_chat_message(token: str, chat_id: int | None, user_msg: str, sid: st
     if not user:
         raise ValueError("Usuário não encontrado")
 
+    user_name = user.name  # <- aqui pegamos o nome do usuário
     created_chat_id = None
 
     if chat_id is None:
@@ -73,8 +74,14 @@ def process_chat_message(token: str, chat_id: int | None, user_msg: str, sid: st
 
     bot_reply = ""
 
+    inputs = {
+        "context": context,
+        "question": user_msg,
+        "user_name": user_name  # <- incluímos o nome aqui
+    }
+
     if ENABLE_STREAMING:
-        stream = chain.stream({"context": context, "question": user_msg})
+        stream = chain.stream(inputs)
 
         def generator():
             nonlocal bot_reply
@@ -91,7 +98,7 @@ def process_chat_message(token: str, chat_id: int | None, user_msg: str, sid: st
         return user_id, generator(), created_chat_id
 
     else:
-        response = chain.invoke({"context": context, "question": user_msg})
+        response = chain.invoke(inputs)
         if hasattr(response, "content"):
             bot_reply = response.content
         else:
