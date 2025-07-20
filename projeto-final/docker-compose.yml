@@ -48,7 +48,6 @@ services:
     volumes:
       - ollama:/root/.ollama
     restart: unless-stopped
-
 volumes:
   data:
   ollama:

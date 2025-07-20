@@ -1,4 +1,5 @@
 import { Clock, CreditCard, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ProfileInfoProps {
   usedHours: number;
@@ -16,6 +17,7 @@ export default function ProfileInfo({
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
         Informações do Usuário
       </h2>
+      <Link to="/buy">Comprar</Link>
       <div className="space-y-6 text-sm text-gray-800 dark:text-gray-300">
         <div className="flex items-center gap-3">
           <Clock className="w-5 h-5 text-primary dark:text-primary-light" />
